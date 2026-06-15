@@ -1,0 +1,44 @@
+name: CI Pipeline
+
+# when to run this workflow
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # step 1 - get the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # step 2 - setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # step 3 - install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # step 4 - run tests
+      - name: Run tests
+        run: npm test
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_TEST }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NODE_TLS_REJECT_UNAUTHORIZED: '0'
+
+      # step 5 - check coverage
+      - name: Run coverage
+        run: npm run test:coverage
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI_TEST }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
